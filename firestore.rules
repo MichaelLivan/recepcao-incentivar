@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can only read/write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Receptions collection - authenticated users can read, only admins can write
+    match /receptions/{receptionId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Rooms collection - authenticated users can read, with role-based write access
+    match /rooms/{roomId} {
+      allow read: if request.auth != null;
+      
+      // Create permission for receptionists
+      allow create: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'receptionist' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.receptionId == request.resource.data.receptionId;
+      
+      // Update and delete permissions
+      allow update, delete: if request.auth != null && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'receptionist' &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.receptionId == resource.data.receptionId)
+      );
+    }
+    
+    // Reservations collection - authenticated users can read, with role-based write access
+    match /reservations/{reservationId} {
+      allow read: if request.auth != null;
+      
+      // Create permissions for both admin and receptionist
+      allow create: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'receptionist' &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.receptionId == request.resource.data.receptionId)
+      );
+      
+      // Update and delete permissions
+      allow update, delete: if request.auth != null && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'receptionist' &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.receptionId == resource.data.receptionId)
+      );
+    }
+  }
+}
