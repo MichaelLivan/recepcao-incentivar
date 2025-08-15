@@ -1,0 +1,20 @@
+# Ignorar arquivos do frontend
+node_modules/
+src/
+public/
+dist/
+package.json
+package-lock.json
+yarn.lock
+vite.config.ts
+tsconfig.json
+tailwind.config.ts
+index.html
+components.json
+
+# Ignorar arquivos de desenvolvimento
+.git/
+.gitignore
+*.md
+.env.local
+.env.development
