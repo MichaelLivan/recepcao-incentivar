@@ -1,5 +1,43 @@
 #!/usr/bin/env python3
 """
+CORREÇÃO RÁPIDA - Execute este script para resolver o problema imediatamente
+"""
+
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
+import subprocess
+import sys
+
+def fix_supabase_library():
+    """Corrige problemas na biblioteca Supabase"""
+    print("🔧 CORREÇÃO RÁPIDA DA BIBLIOTECA SUPABASE")
+    print("=" * 50)
+    
+    # Passo 1: Reinstalar supabase com versão específica
+    print("1. Reinstalando biblioteca supabase...")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "uninstall", "supabase", "-y"
+        ])
+        print("   ✅ Versão antiga removida")
+        
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "supabase==1.0.4"
+        ])
+        print("   ✅ Versão 1.0.4 instalada")
+        
+    except Exception as e:
+        print(f"   ⚠️ Erro na reinstalação: {e}")
+        print("   🔄 Continuando mesmo assim...")
+
+def create_simple_database():
+    """Cria um database.py simplificado"""
+    print("\n2. Criando database.py simplificado...")
+    
+    database_content = '''#!/usr/bin/env python3
+"""
 Database simplificado para resolver problema de headers
 """
 
@@ -113,3 +151,86 @@ def health_check():
         return {'status': 'healthy', 'database': 'connected'}
     except Exception as e:
         return {'status': 'unhealthy', 'error': str(e)}
+'''
+    
+    try:
+        with open('database.py', 'w', encoding='utf-8') as f:
+            f.write(database_content)
+        print("   ✅ database.py criado")
+        return True
+    except Exception as e:
+        print(f"   ❌ Erro ao criar database.py: {e}")
+        return False
+
+def test_fix():
+    """Testa se a correção funcionou"""
+    print("\n3. Testando correção...")
+    
+    try:
+        # Importar e testar
+        import importlib
+        import sys
+        
+        # Recarregar módulo se já importado
+        if 'database' in sys.modules:
+            importlib.reload(sys.modules['database'])
+        
+        from database import get_supabase, test_database_connection
+        
+        print("   ✅ Import OK")
+        
+        # Testar conexão
+        if test_database_connection():
+            print("   ✅ Conexão OK")
+            
+            # Testar query
+            supabase = get_supabase()
+            result = supabase.table('usuarios').select('username').limit(3).execute()
+            print(f"   ✅ Query OK - {len(result.data)} usuário(s)")
+            
+            for user in result.data:
+                print(f"      • {user.get('username', 'N/A')}")
+            
+            return True
+        else:
+            print("   ❌ Falha na conexão")
+            return False
+            
+    except Exception as e:
+        print(f"   ❌ Erro no teste: {e}")
+        return False
+
+def main():
+    """Executa correção completa"""
+    print("🚀 EXECUTANDO CORREÇÃO RÁPIDA...")
+    
+    # Verificar variáveis de ambiente
+    url = os.environ.get('SUPABASE_URL')
+    key = os.environ.get('SUPABASE_KEY')
+    
+    if not url or not key:
+        print("❌ Variáveis de ambiente não carregadas!")
+        print("💡 Execute: python fix_env_loading.py primeiro")
+        return False
+    
+    print(f"✅ Variáveis OK: {url[:50]}...")
+    
+    # Executar correções
+    fix_supabase_library()
+    
+    if create_simple_database():
+        if test_fix():
+            print("\n" + "="*50)
+            print("🎉 CORREÇÃO CONCLUÍDA COM SUCESSO!")
+            print("="*50)
+            print("\n✅ PRÓXIMOS PASSOS:")
+            print("1. Execute: python app.py")
+            print("2. Acesse: http://localhost:5001/api/health")
+            print("3. Teste o login na aplicação")
+            return True
+    
+    print("\n❌ Correção falhou")
+    return False
+
+if __name__ == "__main__":
+    main()
