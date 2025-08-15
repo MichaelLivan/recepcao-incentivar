@@ -7,5 +7,5 @@ healthcheckPath = "/api/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 
-[[services]]
-name = "reception-sync-api"
+[variables]
+PORT = "8000"
