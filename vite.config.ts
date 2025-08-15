@@ -10,12 +10,28 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        }
+      }
+    }
+  },
   server: {
     port: 3000,
     proxy: {
       // Proxy todas as requisições /api para o backend Flask
       '/api': {
-        target: 'http://localhost:5001',  // Backend na porta 5001
+        target: process.env.NODE_ENV === 'production' 
+          ? 'https://your-app.up.railway.app'  // Substitua pela sua URL do Railway
+          : 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {
@@ -31,5 +47,9 @@ export default defineConfig({
         }
       }
     }
+  },
+  preview: {
+    port: 4173,
+    host: true
   }
 })
